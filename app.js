@@ -13,28 +13,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/auth/signup', (req, res, next) => {
-  console.log(req.body);
-  res.status(201).json({
-    message: 'Utilisateur crée !'
-  });
-});
-
-app.post('/api/auth/login', (req, res, next) => {
-  console.log(req.body);
-  res.status(201).json({
-    message: 'Utilisateur crée !'
-  });
-});
-
-app.get("/api/auth/signup", (req, res , next) =>{
-  console.log(req.body);
-  res.status(200).json({
-    message: "Utilisateur trouvé"
-  });
-})
-
-app.use('/api/auth/signup', userRoutes)
+app.use('/api/auth', userRoutes)
 module.exports = app;
 
 
