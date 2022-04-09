@@ -3,11 +3,10 @@ const fs = require("fs")
 
 exports.createSauce = (req, res, next) => {
     console.log(req.body);
-    const sauceObject = JSON.parse(req.body.sauce); /* req.body */
+    const sauceObject = JSON.parse(req.body.sauce);
     delete sauceObject._id;
     console.log(req.file);
     const sauce = new Sauce({
-         //...req.body
         ...sauceObject,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
@@ -56,3 +55,34 @@ exports.getAllSauces = (req, res, next) => {
             res.status(400).json({ error: error });
         });
 }
+
+exports.likeSauce = (req, res) => {
+    if (req.body.like === 1) {
+      Sauce.findOneAndUpdate({ _id: req.params.id },{ $inc: { likes: 1 }, $push: { usersLiked: req.body.userId } })
+        .then(() => res.status(200).json({ message: "Like ajouté !" }))
+        .catch((error) => res.status(400).json({ error }));
+    } 
+
+    else if (req.body.like === -1) {
+      Sauce.findOneAndUpdate({ _id: req.params.id },{ $inc: { dislikes: 1 }, $push: { usersDisliked: req.body.userId } })
+        .then(() => res.status(200).json({ message: "Dislike ajouté !" }))
+        .catch((error) => res.status(400).json({ error }));
+  
+      
+    } 
+
+    else {
+      Sauce.findOne({ _id: req.params.id }).then((resultat) => {
+        if (resultat.usersLiked.includes(req.body.userId)) {
+          Sauce.findOneAndUpdate({ _id: req.params.id }, { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId } })
+            .then(() => res.status(200).json({ message: "Like retiré !" }))
+            .catch((error) => res.status(400).json({ error }));
+        } 
+        else if (resultat.usersDisliked.includes(req.body.userId)) {
+          Sauce.findOneAndUpdate( { _id: req.params.id }, { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId } })
+            .then(() => res.status(200).json({ message: "Dislike retiré !" }))
+            .catch((error) => res.status(400).json({ error }));
+        }
+      });
+    }
+  };
